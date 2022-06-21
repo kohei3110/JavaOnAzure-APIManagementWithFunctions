@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE logback>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="aiAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
+        <instrumentationKey><YOUR_INSTRUMENTATION_KEY></instrumentationKey>
+    </appender>
+    <root level="info">
+        <appender-ref ref="aiAppender"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
