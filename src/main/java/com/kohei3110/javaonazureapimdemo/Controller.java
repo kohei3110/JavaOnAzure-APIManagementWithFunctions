@@ -5,6 +5,7 @@ import com.kohei3110.javaonazureapimdemo.CosmosCRUD.Factory;
 import com.kohei3110.javaonazureapimdemo.CosmosCRUD.model.Item;
 import com.kohei3110.javaonazureapimdemo.CosmosCRUD.service.CreateItemService;
 import com.kohei3110.javaonazureapimdemo.CosmosCRUD.service.DeleteItemService;
+import com.kohei3110.javaonazureapimdemo.CosmosCRUD.service.GetAllItemService;
 import com.kohei3110.javaonazureapimdemo.CosmosCRUD.service.GetItemService;
 import com.kohei3110.javaonazureapimdemo.CosmosCRUD.service.UpdateItemService;
 import com.microsoft.azure.functions.ExecutionContext;
@@ -20,11 +21,36 @@ import com.microsoft.azure.functions.annotation.CosmosDBOutput;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
+import java.util.List;
 import java.util.Optional;
 
 public class Controller {
 
     Factory factory = new Factory();
+
+    @FunctionName("GetAllItems")
+    public HttpResponseMessage getAllItems(
+        @HttpTrigger(
+            name = "req",
+            methods = {HttpMethod.GET},
+            authLevel = AuthorizationLevel.ANONYMOUS)
+            HttpRequestMessage<Optional<String>> request,
+        @CosmosDBInput(
+            name = "DBInput",
+            databaseName = "Items",
+            collectionName = "Items",
+            connectionStringSetting = "ItemDatabaseConnectionString")
+            Optional<List<Item>> inputItem, 
+            final ExecutionContext context) {
+
+                if (request.getHttpMethod() == HttpMethod.GET) {
+                    if (inputItem.isPresent()) {
+                        GetAllItemService getAllItemService = factory.injectGetAllItemService();
+                        return getAllItemService.requestCosmosDB(request, inputItem);
+                    }
+                }
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("This HTTP Method is not supported on this application").build();
+            }
 
     @FunctionName("GetOrDeleteItem")
     public HttpResponseMessage getOrDeleteItem(
